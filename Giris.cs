@@ -1,35 +1,43 @@
-﻿using System.CodeDom.Compiler;
+﻿using System.Data.SqlClient;
 using System.Windows.Forms;
+//DESKTOP-0570HGU\MSSQLSERVER01
+
 
 namespace ZT_InternProject
 {
     public partial class Giris : Form
     {
-        public int oto = 0;
+        DatabaseHelper dbHelper;
         public Giris()
         {
             InitializeComponent();
+            dbHelper = new DatabaseHelper();
         }
 
         private void button1_Click(object sender, System.EventArgs e)
         {
-            oto++;
-            kullanici_adi_l.Text = ""+ oto;
-        }
+            string username = this.username.Text;
+            string password = this.password.Text;
+            bool beni_hatirla = benihatirla.Checked;
 
-        private void label1_Click(object sender, System.EventArgs e)
-        {
+            string query = "SELECT * FROM signup WHERE username=@username AND pass=@password";
+            SqlParameter[] parameters = new SqlParameter[]
+            {
+                new SqlParameter("@username", username),
+                new SqlParameter("@password", password)
+            };
 
-        }
-
-        private void kullanici_adi_TextChanged(object sender, System.EventArgs e)
-        {
-
-        }
-
-        private void checkBox1_CheckedChanged(object sender, System.EventArgs e)
-        {
-
+            using (SqlDataReader dr = dbHelper.ExecuteReader(query, parameters))
+            {
+                if (dr.Read())
+                {
+                    MessageBox.Show("Giriş Başarılı", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Eksik veya hatalı giriş işlemi!", "Ziraat Teknoloji", MessageBoxButtons.RetryCancel, MessageBoxIcon.Warning);
+                }
+            }
         }
 
         private void button2_Click(object sender, System.EventArgs e)

@@ -30,64 +30,68 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Giris));
             this.button1 = new System.Windows.Forms.Button();
-            this.sifre = new System.Windows.Forms.TextBox();
-            this.kullanici_adi = new System.Windows.Forms.TextBox();
+            this.password = new System.Windows.Forms.TextBox();
+            this.username = new System.Windows.Forms.TextBox();
             this.kullanici_adi_l = new System.Windows.Forms.Label();
             this.sifre_l = new System.Windows.Forms.Label();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.benihatirla = new System.Windows.Forms.CheckBox();
             this.button2 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
             // 
             this.button1.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            resources.ApplyResources(this.button1, "button1");
+            this.button1.CausesValidation = false;
             this.button1.Cursor = System.Windows.Forms.Cursors.Default;
             this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
-            resources.ApplyResources(this.button1, "button1");
             this.button1.Name = "button1";
             this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // sifre
+            // password
             // 
-            resources.ApplyResources(this.sifre, "sifre");
-            this.sifre.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.HistoryList;
-            this.sifre.Name = "sifre";
-            this.sifre.UseSystemPasswordChar = true;
+            resources.ApplyResources(this.password, "password");
+            this.password.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.HistoryList;
+            this.password.CausesValidation = false;
+            this.password.Name = "password";
+            this.password.UseSystemPasswordChar = true;
             // 
-            // kullanici_adi
+            // username
             // 
-            this.kullanici_adi.AccessibleRole = System.Windows.Forms.AccessibleRole.None;
-            this.kullanici_adi.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.HistoryList;
-            this.kullanici_adi.BackColor = System.Drawing.SystemColors.Window;
-            this.kullanici_adi.CharacterCasing = System.Windows.Forms.CharacterCasing.Lower;
-            resources.ApplyResources(this.kullanici_adi, "kullanici_adi");
-            this.kullanici_adi.Name = "kullanici_adi";
-            this.kullanici_adi.Tag = "";
-            this.kullanici_adi.TextChanged += new System.EventHandler(this.kullanici_adi_TextChanged);
+            this.username.AccessibleRole = System.Windows.Forms.AccessibleRole.None;
+            this.username.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.HistoryList;
+            this.username.BackColor = System.Drawing.SystemColors.Window;
+            this.username.CausesValidation = false;
+            this.username.CharacterCasing = System.Windows.Forms.CharacterCasing.Lower;
+            resources.ApplyResources(this.username, "username");
+            this.username.Name = "username";
+            this.username.Tag = "";
             // 
             // kullanici_adi_l
             // 
             resources.ApplyResources(this.kullanici_adi_l, "kullanici_adi_l");
+            this.kullanici_adi_l.CausesValidation = false;
             this.kullanici_adi_l.Name = "kullanici_adi_l";
-            this.kullanici_adi_l.Click += new System.EventHandler(this.label1_Click);
             // 
             // sifre_l
             // 
             resources.ApplyResources(this.sifre_l, "sifre_l");
             this.sifre_l.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.sifre_l.CausesValidation = false;
             this.sifre_l.Name = "sifre_l";
             // 
-            // checkBox1
+            // benihatirla
             // 
-            resources.ApplyResources(this.checkBox1, "checkBox1");
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            resources.ApplyResources(this.benihatirla, "benihatirla");
+            this.benihatirla.CausesValidation = false;
+            this.benihatirla.Name = "benihatirla";
+            this.benihatirla.UseVisualStyleBackColor = true;
             // 
             // button2
             // 
             this.button2.BackColor = System.Drawing.SystemColors.InactiveCaption;
+            this.button2.CausesValidation = false;
             this.button2.Cursor = System.Windows.Forms.Cursors.Default;
             this.button2.DialogResult = System.Windows.Forms.DialogResult.OK;
             resources.ApplyResources(this.button2, "button2");
@@ -101,12 +105,13 @@
             this.AccessibleRole = System.Windows.Forms.AccessibleRole.None;
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.CausesValidation = false;
             this.Controls.Add(this.button2);
-            this.Controls.Add(this.checkBox1);
+            this.Controls.Add(this.benihatirla);
             this.Controls.Add(this.sifre_l);
             this.Controls.Add(this.kullanici_adi_l);
-            this.Controls.Add(this.kullanici_adi);
-            this.Controls.Add(this.sifre);
+            this.Controls.Add(this.username);
+            this.Controls.Add(this.password);
             this.Controls.Add(this.button1);
             this.Cursor = System.Windows.Forms.Cursors.Default;
             this.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -121,11 +126,11 @@
         #endregion
 
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.TextBox sifre;
-        private System.Windows.Forms.TextBox kullanici_adi;
+        private System.Windows.Forms.TextBox password;
+        private System.Windows.Forms.TextBox username;
         private System.Windows.Forms.Label kullanici_adi_l;
         private System.Windows.Forms.Label sifre_l;
-        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.CheckBox benihatirla;
         private System.Windows.Forms.Button button2;
     }
 }
