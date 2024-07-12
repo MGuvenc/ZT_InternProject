@@ -12,6 +12,8 @@ namespace ZT_InternProject
         {
             InitializeComponent();
             dbHelper = new DatabaseHelper();
+            Cursor.Current = Cursors.WaitCursor;
+            Cursor.Current = Cursors.Default;
         }
 
         private void button1_Click(object sender, System.EventArgs e)
@@ -32,6 +34,10 @@ namespace ZT_InternProject
                 if (dr.Read())
                 {
                     MessageBox.Show("Giriş Başarılı", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    AnaSayfa AnaSayfa = new AnaSayfa();
+
+                    AnaSayfa.Visible = true;
+                    this.Visible = false;
                 }
                 else
                 {

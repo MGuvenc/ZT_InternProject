@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.SqlClient;
 using System.Windows.Forms;
 
 namespace ZT_InternProject
@@ -26,21 +25,40 @@ namespace ZT_InternProject
             string surname = this.surname.Text;
             string username = this.username.Text;
             string pass = this.password.Text;
-            string persno = this.persno.Text;
+            string persnoStr = this.persno.Text;
             string mail = this.mail.Text;
 
-            string columns = "name, surname, username, pass, regno, access, mail";
-            string values = $"'{name}','{surname}','{username}','{pass}',{persno}, 1,'{mail}'";
-
-            bool iskayit = dbHelper.Insert("signup", columns, values);
-
-            if (iskayit)
+            if (!string.IsNullOrEmpty(name) &&
+                !string.IsNullOrEmpty(surname) &&
+                !string.IsNullOrEmpty(username) &&
+                !string.IsNullOrEmpty(pass) &&
+                !string.IsNullOrEmpty(persnoStr) &&
+                !string.IsNullOrEmpty(mail))
             {
-                MessageBox.Show("Kayıt başarılı!", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (int.TryParse(persnoStr, out int persno))
+                {
+                    string columns = "name, surname, username, pass, regno, access, mail";
+                    string values = $"'{name}','{surname}','{username}','{pass}',{persno}, 1,'{mail}'";
+
+                    bool iskayit = dbHelper.Insert("signup", columns, values);
+
+                    if (iskayit)
+                    {
+                        MessageBox.Show("Kayıt başarılı!", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Kayıt başarısız!", "Ziraat Teknoloji", MessageBoxButtons.RetryCancel, MessageBoxIcon.Warning);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Personel numarası geçerli bir max 11 haneli sayı olmalıdır!", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
             else
             {
-                MessageBox.Show("Kayıt başarısız!", "Ziraat Teknoloji", MessageBoxButtons.RetryCancel, MessageBoxIcon.Warning);
+                MessageBox.Show("Boş alan bırakmayın!", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
     }
