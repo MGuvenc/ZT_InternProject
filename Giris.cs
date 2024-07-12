@@ -1,5 +1,7 @@
-﻿using System.Data.SqlClient;
+﻿using System;
+using System.Data.SqlClient;
 using System.Windows.Forms;
+using System.Xml.Linq;
 //DESKTOP-0570HGU\MSSQLSERVER01
 
 
@@ -33,11 +35,23 @@ namespace ZT_InternProject
             {
                 if (dr.Read())
                 {
-                    MessageBox.Show("Giriş Başarılı", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    AnaSayfa AnaSayfa = new AnaSayfa();
+                    string per_id = dr["id"].ToString();
+                    string per_username = dr["username"].ToString();
+                    string per_persno = dr["regno"].ToString();
+                    string per_access = dr["access"].ToString();
+                    string per_lastlog = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
 
-                    AnaSayfa.Visible = true;
-                    this.Visible = false;
+                    string columns = "p_id, p_username, p_regno, p_access, lastlog";
+                    string values = $"'{per_id}','{per_username}','{per_persno}','{per_access}','{per_lastlog}'";
+                    
+                    bool islogin = dbHelper.Insert("p_login", columns, values);
+
+                    if (islogin) { MessageBox.Show("Giriş Başarılı", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        AnaSayfa AnaSayfa = new AnaSayfa();
+
+                        AnaSayfa.Visible = true;
+                        this.Visible = false;
+                    }
                 }
                 else
                 {
