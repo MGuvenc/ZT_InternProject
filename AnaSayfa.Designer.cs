@@ -67,9 +67,9 @@
             // scrollablePanel
             // 
             this.scrollablePanel.AutoScroll = true;
-            this.scrollablePanel.Location = new System.Drawing.Point(25, 100);
+            this.scrollablePanel.Location = new System.Drawing.Point(25, 75);
             this.scrollablePanel.Name = "scrollablePanel";
-            this.scrollablePanel.Size = new System.Drawing.Size(900, 400);
+            this.scrollablePanel.Size = new System.Drawing.Size(755, 492);
             this.scrollablePanel.TabIndex = 4;
             // 
             // AnaSayfa
@@ -78,7 +78,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.AutoScrollMinSize = new System.Drawing.Size(0, 600);
-            this.ClientSize = new System.Drawing.Size(984, 561);
+            this.ClientSize = new System.Drawing.Size(784, 611);
             this.Controls.Add(this.scrollablePanel);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -93,6 +93,7 @@
             this.Load += new System.EventHandler(this.AnaSayfa_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
 
         #endregion

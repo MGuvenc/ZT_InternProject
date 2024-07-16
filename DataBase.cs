@@ -74,5 +74,38 @@ namespace ZT_InternProject
             string query = $"DELETE FROM {tableName} WHERE {condition}";
             return ExecuteNonQuery(query);
         }
+
+        public List<int> GetReservedDesks()
+        {
+            List<int> reservedDesks = new List<int>();
+            string query = "SELECT masa_no FROM masa_rezervasyon WHERE GETDATE() BETWEEN baslangic_tarihi AND bitis_tarihi";
+            using (SqlDataReader dr = ExecuteReader(query, null))
+            {
+                while (dr.Read())
+                {
+                    reservedDesks.Add(Convert.ToInt32(dr["masa_no"]));
+                }
+            }
+            return reservedDesks;
+        }
+
+        public int GetTotalDeskCount()
+        {
+            string query = "SELECT COUNT(*) FROM masa";
+            return Convert.ToInt32(ExecuteScalar(query));
+        }
+
+        public bool ReserveDesk(int deskNo, string username)
+        {
+            string query = "INSERT INTO masa_rezervasyon (p_username, masa_no, baslangic_tarihi, bitis_tarihi) VALUES (@username, @deskNo, @startDate, @endDate)";
+            SqlParameter[] parameters = new SqlParameter[]
+            {
+                new SqlParameter("@username", username),
+                new SqlParameter("@deskNo", deskNo),
+                new SqlParameter("@startDate", DateTime.Now),
+                new SqlParameter("@endDate", DateTime.Now.AddHours(1)) // Örneğin 1 saatlik rezervasyon
+            };
+            return ExecuteNonQuery(query, parameters);
+        }
     }
 }

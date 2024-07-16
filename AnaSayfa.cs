@@ -8,15 +8,16 @@ namespace ZT_InternProject
     public partial class AnaSayfa : Form
     {
         private readonly DatabaseHelper dbHelper;
-        private readonly string currentUsername;
+        private string currentUsername;
         private int currentFloor;
         private int currentStudyRoom;
+        public string CurrentUsername { get => currentUsername; set => currentUsername = value; }
 
         public AnaSayfa(string username)
         {
             InitializeComponent();
             dbHelper = new DatabaseHelper();
-            currentUsername = username;
+            CurrentUsername = username;
         }
 
         private void AnaSayfa_Load(object sender, EventArgs e)
@@ -24,17 +25,37 @@ namespace ZT_InternProject
             LoadFloors();
             comboBox1.SelectedIndexChanged += ComboBox1_SelectedIndexChanged;
             comboBox2.SelectedIndexChanged += ComboBox2_SelectedIndexChanged;
+            if (comboBox1.Items.Count > 0)
+            {
+                comboBox1.SelectedIndex = 0; 
+                comboBox2.SelectedIndex = 0;
+            }
         }
 
         private void LoadFloors()
         {
-            string query = "SELECT DISTINCT kat_no FROM masa";
+            string query = "SELECT DISTINCT kat_no FROM masa ORDER BY kat_no";
+            bool katnum = false;
             SqlDataReader reader = dbHelper.ExecuteReader(query, null);
+            
             while (reader.Read())
             {
+                katnum = true;
                 comboBox1.Items.Add(reader["kat_no"].ToString());
             }
             reader.Close();
+            if (!katnum)
+            {
+                Label noDesksLabel = new Label
+                {
+                    Text = "Listelenecek masa bulunamadı..",
+                    ForeColor = Color.Red,
+                    Font = new Font("Segoe UI", 8, FontStyle.Bold),
+                    Location = new Point(10, 10),
+                    AutoSize = true
+                };
+                scrollablePanel.Controls.Add(noDesksLabel);
+            }
         }
 
         private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -65,23 +86,41 @@ namespace ZT_InternProject
         private void LoadDesks(int floor, int studyRoom)
         {
             scrollablePanel.Controls.Clear();
-            string query = "SELECT * FROM masa WHERE kat_no = @floor AND calisma_odasi_no = @studyRoom";
+            string query = @"
+                SELECT masa.masa_no, 
+                       CASE 
+                           WHEN mr.masa_no IS NULL THEN 'available' 
+                           ELSE 'reserved' 
+                       END AS status
+                FROM masa
+                LEFT JOIN masa_rezervasyon mr 
+                ON masa.masa_no = mr.masa_no 
+                AND mr.baslangic_tarihi <= @currentDate 
+                AND mr.bitis_tarihi >= @currentDate
+                WHERE masa.kat_no = @floor 
+                AND masa.calisma_odasi_no = @studyRoom";
+
             SqlParameter[] parameters = {
                 new SqlParameter("@floor", floor),
-                new SqlParameter("@studyRoom", studyRoom)
+                new SqlParameter("@studyRoom", studyRoom),
+                new SqlParameter("@currentDate", DateTime.Now)
             };
 
             SqlDataReader reader = dbHelper.ExecuteReader(query, parameters);
             int index = 0;
+
             while (reader.Read())
             {
                 int deskNo = Convert.ToInt32(reader["masa_no"]);
+                string status = reader["status"].ToString();
+
                 Button deskButton = new Button
                 {
                     Text = deskNo.ToString(),
                     Width = 60,
                     Height = 60,
-                    Location = new Point(10 + (index % 5) * 70, 10 + (index / 5) * 70)
+                    Location = new Point(10 + (index % 10) * 70, 10 + (index / 10) * 70),
+                    BackColor = status == "available" ? Color.Green : Color.Red
                 };
                 deskButton.Click += DeskButton_Click;
                 scrollablePanel.Controls.Add(deskButton);
@@ -102,39 +141,62 @@ namespace ZT_InternProject
             DateTime startDate = DateTime.Now;
             DateTime endDate = startDate.AddDays(5);
 
-            string checkQuery = "SELECT * FROM masa_rezervasyon WHERE masa_no = @deskNo AND @currentDate BETWEEN baslangic_tarihi AND bitis_tarihi";
-            SqlParameter[] checkParameters = {
+            string userCheckQuery = "SELECT * FROM masa_rezervasyon WHERE p_username = @username AND @currentDate BETWEEN baslangic_tarihi AND bitis_tarihi";
+            SqlParameter[] userCheckParameters = {
+                new SqlParameter("@username", CurrentUsername),
+                new SqlParameter("@currentDate", DateTime.Now)
+            };
+
+            SqlDataReader userCheckReader = dbHelper.ExecuteReader(userCheckQuery, userCheckParameters);
+            if (userCheckReader.HasRows)
+            {
+                MessageBox.Show("Mevcut rezervasyonunuz bulunuyor!", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                userCheckReader.Close();
+                return;
+            }
+            userCheckReader.Close();
+
+            string deskCheckQuery = "SELECT * FROM masa_rezervasyon WHERE masa_no = @deskNo AND @currentDate BETWEEN baslangic_tarihi AND bitis_tarihi";
+            SqlParameter[] deskCheckParameters = {
                 new SqlParameter("@deskNo", deskNo),
                 new SqlParameter("@currentDate", DateTime.Now)
             };
 
-            SqlDataReader reader = dbHelper.ExecuteReader(checkQuery, checkParameters);
-            if (reader.HasRows)
+            SqlDataReader deskCheckReader = dbHelper.ExecuteReader(deskCheckQuery, deskCheckParameters);
+            if (deskCheckReader.HasRows)
             {
-                MessageBox.Show("This desk is already reserved.");
-                reader.Close();
+                MessageBox.Show("Masa rezerve edilmiş..");
+                deskCheckReader.Close();
                 return;
             }
-            reader.Close();
+            deskCheckReader.Close();
 
             string insertQuery = "INSERT INTO masa_rezervasyon (p_username, masa_no, baslangic_tarihi, bitis_tarihi) VALUES (@username, @deskNo, @startDate, @endDate)";
             SqlParameter[] insertParameters = {
-                new SqlParameter("@username", currentUsername),
+                new SqlParameter("@username", CurrentUsername),
                 new SqlParameter("@deskNo", deskNo),
                 new SqlParameter("@startDate", startDate),
                 new SqlParameter("@endDate", endDate)
             };
 
-            bool success = dbHelper.ExecuteNonQuery(insertQuery, insertParameters);
-            if (success)
+            try
             {
-                MessageBox.Show("Desk reserved successfully.");
-                LoadDesks(currentFloor, currentStudyRoom);
+                bool success = dbHelper.ExecuteNonQuery(insertQuery, insertParameters);
+                if (success)
+                {
+                    MessageBox.Show("Rezervasyon başarılı!", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    LoadDesks(currentFloor, currentStudyRoom);
+                }
+                else
+                {
+                    MessageBox.Show("Rezervasyon başarısız.");
+                }
             }
-            else
+            catch (SqlException ex)
             {
-                MessageBox.Show("Failed to reserve the desk.");
+                MessageBox.Show($"Rezervasyon sırasında bir hata oluştu: {ex.Message}", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
         }
     }
 }
