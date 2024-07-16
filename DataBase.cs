@@ -1,4 +1,6 @@
-﻿using System.Data.SqlClient;
+﻿using System.Collections.Generic;
+using System;
+using System.Data.SqlClient;
 
 namespace ZT_InternProject
 {
@@ -8,14 +10,25 @@ namespace ZT_InternProject
 
         public SqlConnection GetConnection()
         {
-            return new SqlConnection(connectionString);
+            try
+            {
+                return new SqlConnection(connectionString);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Veritabanı bağlantısı başarısız.", ex);
+            }
         }
 
-        public bool ExecuteNonQuery(string query)
+        public bool ExecuteNonQuery(string query, SqlParameter[] parameters = null)
         {
             using (SqlConnection conn = GetConnection())
             {
                 SqlCommand cmd = new SqlCommand(query, conn);
+                if (parameters != null)
+                {
+                    cmd.Parameters.AddRange(parameters);
+                }
                 conn.Open();
                 int result = cmd.ExecuteNonQuery();
                 return result > 0;
@@ -40,7 +53,6 @@ namespace ZT_InternProject
             {
                 SqlCommand cmd = new SqlCommand(query, conn);
                 conn.Open();
-
                 return cmd.ExecuteScalar();
             }
         }

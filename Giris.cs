@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Windows.Forms;
-using System.Xml.Linq;
-//DESKTOP-0570HGU\MSSQLSERVER01
-
 
 namespace ZT_InternProject
 {
     public partial class Giris : Form
     {
         DatabaseHelper dbHelper;
+
         public Giris()
         {
             InitializeComponent();
@@ -18,7 +16,7 @@ namespace ZT_InternProject
             Cursor.Current = Cursors.Default;
         }
 
-        private void button1_Click(object sender, System.EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
             string username = this.username.Text;
             string password = this.password.Text;
@@ -43,14 +41,15 @@ namespace ZT_InternProject
 
                     string columns = "p_id, p_username, p_regno, p_access, lastlog";
                     string values = $"'{per_id}','{per_username}','{per_persno}','{per_access}','{per_lastlog}'";
-                    
+
                     bool islogin = dbHelper.Insert("p_login", columns, values);
 
-                    if (islogin) { MessageBox.Show("Giriş Başarılı", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        AnaSayfa AnaSayfa = new AnaSayfa();
-
-                        AnaSayfa.Visible = true;
-                        this.Visible = false;
+                    if (islogin)
+                    {
+                        MessageBox.Show("Giriş Başarılı", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        AnaSayfa anaSayfa = new AnaSayfa(per_username);
+                        anaSayfa.Show();
+                        this.Hide();
                     }
                 }
                 else
@@ -60,11 +59,12 @@ namespace ZT_InternProject
             }
         }
 
-        private void button2_Click(object sender, System.EventArgs e)
+        private void button2_Click(object sender, EventArgs e)
         {
-            Kayit kayit = new Kayit();
-
-            kayit.Visible = true;
+            Kayit kayit = new Kayit
+            {
+                Visible = true
+            };
             this.Visible = false;
         }
     }
