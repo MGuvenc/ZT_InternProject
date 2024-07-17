@@ -11,6 +11,7 @@ namespace ZT_InternProject
         public Giris()
         {
             InitializeComponent();
+            Init_Data();
             dbHelper = new DatabaseHelper();
             Cursor.Current = Cursors.WaitCursor;
             Cursor.Current = Cursors.Default;
@@ -21,6 +22,7 @@ namespace ZT_InternProject
             string username = this.username.Text;
             string password = this.password.Text;
             bool beni_hatirla = benihatirla.Checked;
+            Save_Data();
 
             string query = "SELECT * FROM signup WHERE username=@username AND pass=@password";
             SqlParameter[] parameters = new SqlParameter[]
@@ -66,6 +68,38 @@ namespace ZT_InternProject
                 Visible = true
             };
             this.Visible = false;
+        }
+        private void Init_Data()
+        {
+            if (Properties.Settings.Default.UserName != string.Empty)
+            {
+                if (Properties.Settings.Default.Remember == true)
+                {
+                   username.Text = Properties.Settings.Default.UserName;
+                   password.Text = Properties.Settings.Default.Pass;
+                   benihatirla.Checked = true;
+                }
+                else
+                {
+                    username.Text = Properties.Settings.Default.UserName;
+                }
+            }
+        }
+        private void Save_Data()
+        {
+            if (benihatirla.Checked)
+            {
+                Properties.Settings.Default.UserName = username.Text.Trim();
+                Properties.Settings.Default.Pass = password.Text.Trim();
+                Properties.Settings.Default.Remember = true;
+                Properties.Settings.Default.Save();
+            }
+            else
+            {
+                Properties.Settings.Default.UserName = "";
+                Properties.Settings.Default.Remember = false;
+                Properties.Settings.Default.Save();
+            }
         }
     }
 }

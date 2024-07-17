@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Globalization;
+using System.Runtime.InteropServices.ComTypes;
 using System.Windows.Forms;
 
 namespace ZT_InternProject
@@ -29,6 +31,10 @@ namespace ZT_InternProject
             {
                 comboBox1.SelectedIndex = 0; 
                 comboBox2.SelectedIndex = 0;
+            }
+            if (UserHasReservation())
+            {
+                rezervIptal.Visible = true;
             }
         }
 
@@ -136,10 +142,23 @@ namespace ZT_InternProject
             ReserveDesk(deskNo);
         }
 
+        private bool UserHasReservation()
+        {
+            string userCheckQuery = "SELECT * FROM masa_rezervasyon WHERE p_username = @username AND @currentDate BETWEEN baslangic_tarihi AND bitis_tarihi";
+            SqlParameter[] userCheckParameters = {
+        new SqlParameter("@username", CurrentUsername),
+        new SqlParameter("@currentDate", DateTime.Now)
+    };
+
+            SqlDataReader userCheckReader = dbHelper.ExecuteReader(userCheckQuery, userCheckParameters);
+            bool hasReservation = userCheckReader.HasRows;
+            userCheckReader.Close();
+            return hasReservation;
+        }
         private void ReserveDesk(int deskNo)
         {
-            DateTime startDate = DateTime.Now;
-            DateTime endDate = startDate.AddDays(5);
+            DateTime startDate = startDatePicker.Value.Date;
+            DateTime endDate = endDatePicker.Value.Date;
 
             string userCheckQuery = "SELECT * FROM masa_rezervasyon WHERE p_username = @username AND @currentDate BETWEEN baslangic_tarihi AND bitis_tarihi";
             SqlParameter[] userCheckParameters = {
@@ -165,38 +184,75 @@ namespace ZT_InternProject
             SqlDataReader deskCheckReader = dbHelper.ExecuteReader(deskCheckQuery, deskCheckParameters);
             if (deskCheckReader.HasRows)
             {
-                MessageBox.Show("Masa rezerve edilmiş..");
+                MessageBox.Show("Masa rezerve edilmiş..", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 deskCheckReader.Close();
                 return;
             }
             deskCheckReader.Close();
-
-            string insertQuery = "INSERT INTO masa_rezervasyon (p_username, masa_no, baslangic_tarihi, bitis_tarihi) VALUES (@username, @deskNo, @startDate, @endDate)";
-            SqlParameter[] insertParameters = {
-                new SqlParameter("@username", CurrentUsername),
-                new SqlParameter("@deskNo", deskNo),
-                new SqlParameter("@startDate", startDate),
-                new SqlParameter("@endDate", endDate)
-            };
-
-            try
+            if(endDate < startDate)
             {
-                bool success = dbHelper.ExecuteNonQuery(insertQuery, insertParameters);
-                if (success)
-                {
-                    MessageBox.Show("Rezervasyon başarılı!", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    LoadDesks(currentFloor, currentStudyRoom);
-                }
-                else
-                {
-                    MessageBox.Show("Rezervasyon başarısız.");
-                }
+                MessageBox.Show("Bitiş tarihi, başlangıç tarihinden önce olamaz!", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            catch (SqlException ex)
+            else
             {
-                MessageBox.Show($"Rezervasyon sırasında bir hata oluştu: {ex.Message}", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                string insertQuery = "INSERT INTO masa_rezervasyon (p_username, masa_no, baslangic_tarihi, bitis_tarihi) VALUES (@username, @deskNo, @startDate, @endDate)";
+                SqlParameter[] insertParameters = {
+                    new SqlParameter("@username", CurrentUsername),
+                    new SqlParameter("@deskNo", deskNo),
+                    new SqlParameter("@startDate", startDate),
+                    new SqlParameter("@endDate", endDate)
+                };
+
+                try
+                {
+                    bool success = dbHelper.ExecuteNonQuery(insertQuery, insertParameters);
+                    if (success)
+                    {
+                        MessageBox.Show("Rezervasyon işlemi başarılı!", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        rezervIptal.Visible = true;
+                        LoadDesks(currentFloor, currentStudyRoom);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Rezervasyon başarısız.", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    MessageBox.Show($"Rezervasyon sırasında bir hata oluştu: {ex.Message}", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
             }
 
         }
+
+        private void logout_Click(object sender, EventArgs e)
+        {
+            this.Visible = false;
+            Giris giris = new Giris();
+            giris.Visible = true;
+        }
+
+        private void rezervIptal_Click(object sender, EventArgs e)
+        {
+            string tableName = "masa_rezervasyon"; // Correct table name
+            string setValues = "bitis_tarihi = '" + DateTime.Today.ToString("yyyy-MM-dd") + "'";
+            string condition = "p_username = '" + currentUsername + "' AND GETDATE() BETWEEN baslangic_tarihi AND bitis_tarihi";
+
+            DatabaseHelper dbHelper = new DatabaseHelper();
+
+            if (dbHelper.Update(tableName, setValues, condition))
+            {
+                MessageBox.Show("Rezervasyon iptal edildi!", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                rezervIptal.Visible = false;
+                LoadDesks(currentFloor, currentStudyRoom);
+            }
+            else
+            {
+                MessageBox.Show("Rezervasyon iptali başarısız.", "Ziraat Teknoloji", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+
     }
 }
